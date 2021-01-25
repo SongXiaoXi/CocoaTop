@@ -201,8 +201,14 @@ unsigned int mach_thread_priority(thread_t thread, policy_t policy)
 	self.prio = 0;
 	self.pcpu = 0;
 	self.ptime = 0;
-
+    
+    extern bool is_tfp0_hgsp4;
     extern kern_return_t _task_for_pid(pid_t pid, task_port_t *target);
+    if (@available(iOS 11, *)) {
+        if (self.pid == 0 && is_tfp0_hgsp4) {
+            return;
+        }
+    }
     if (_task_for_pid(self.pid, &task) != KERN_SUCCESS)
 		return;
 	// Basic task info
@@ -237,10 +243,8 @@ unsigned int mach_thread_priority(thread_t thread, policy_t policy)
 	info_count = TASK_CATEGORY_POLICY_COUNT;
 	task_policy_get(task, TASK_CATEGORY_POLICY, (task_policy_t)&policy_info, &info_count, &get_default);
 	self.role = policy_info.role;
-    if (@available(iOS 11, *)) {
-    } else if (@available(iOS 10, *)) {
-        if (self.pid == 0)
-            goto task_port;
+    if (self.pid == 0 && is_tfp0_hgsp4) {
+        goto task_port;
     }
 	// Task times
 	struct task_thread_times_info times;

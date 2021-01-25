@@ -69,10 +69,12 @@ static UIColor *_greenColor() {
     }
 }
 
+bool is_tfp0_hgsp4 = false;
 kern_return_t
 _task_for_pid(pid_t pid, task_port_t *target) {
     kern_return_t ret = task_for_pid(mach_task_self(), pid, target);
     if (ret != KERN_SUCCESS && pid == 0) {
+        is_tfp0_hgsp4 = true;
         ret = host_get_special_port(mach_host_self(), HOST_LOCAL_NODE, 4, target);
     }
     return ret;
